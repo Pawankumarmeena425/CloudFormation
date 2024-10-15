@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to create an EC2 Launch Template with IMDSv2 enabled.
+
+Resources:  
+  IMDSv2LaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: IMDSV2
+      LaunchTemplateData:
+        MetadataOptions:
+          HttpEndpoint: enabled        
+          HttpPutResponseHopLimit: 1   
+          HttpTokens: required          
+
+Outputs:
+  LaunchTemplateId:
+    Description: The ID of the EC2 Launch Template
+    Value: !Ref IMDSv2LaunchTemplate
+
+  LaunchTemplateLatestVersion:
+    Description: The latest version number of the EC2 Launch Template
+    Value: !GetAtt IMDSv2LaunchTemplate.LatestVersionNumber

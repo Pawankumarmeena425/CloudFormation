@@ -1,0 +1,89 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to create an EC2 instance with predefined input parameters.
+
+Parameters:
+  AWSEC2Type:
+    Type: String
+    Default: t2.small
+    AllowedValues: 
+      - t2.micro
+      - t2.small
+      - t2.medium
+    Description: Type of EC2 instance
+  
+  AWSVolSize:
+    Type: Number
+    Default: 64
+    Description: Size of the root EBS volume in GB
+
+  AWSRegion:
+    Type: String
+    Default: ap-south-1
+    Description: The AWS region to deploy the EC2 instance
+
+  AWSZone:
+    Type: String
+    Default: ap-south-1a
+    Description: Availability zone for the EC2 instance
+
+  AWSSecurityGroups:
+    Type: String
+    Default: sg-08fa4451969195722,sg-0665c42e824036b4f
+    Description: Comma-separated list of Security Group IDs
+
+  AWSAMI:
+    Type: AWS::EC2::Image::Id
+    Default: ami-078264b8ba71bc45e
+    Description: The AMI ID for the EC2 instance
+  
+  AWSNet:
+    Type: AWS::EC2::Subnet::Id
+    Default: subnet-08b3b468cbcd7dc8a
+    Description: Subnet ID where the EC2 instance will be launched
+
+  AWSInstanceProfile:
+    Type: String
+    Default: ansible-ec2-role
+    Description: The instance profile (IAM role) to attach to the EC2 instance
+
+
+  
+
+
+Resources:
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref AWSEC2Type
+      AvailabilityZone: !Ref AWSZone
+      ImageId: !Ref AWSAMI
+      SubnetId: !Ref AWSNet
+      IamInstanceProfile: !Ref AWSInstanceProfile
+      DisableApiTermination: true
+      SecurityGroupIds: 
+        !Split [",", !Ref AWSSecurityGroups]
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: !Ref AWSVolSize
+            DeleteOnTermination: true
+      LaunchTemplate: 
+          LaunchTemplateName: IMDSV2
+          Version: 1
+          
+      Tags:
+        - Key: Name
+          Value: CFN-EC2-Instance
+
+Outputs:
+  InstanceId:
+    Description: The EC2 instance ID
+    Value: !Ref EC2Instance
+
+  InstancePublicIP:
+    Description: The public IP of the EC2 instance
+    Value: !GetAtt EC2Instance.PublicIp
+
+  InstancePrivateIP:
+    Description: The private IP of the EC2 instance
+    Value: !GetAtt EC2Instance.PrivateIp
